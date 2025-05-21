@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Bank, CreditCard, Wallet } from 'lucide-react';
+import { Banknote, CreditCard, Wallet } from 'lucide-react';
 
 interface PaymentMethodOption {
   id: string;
@@ -48,7 +48,7 @@ const PaymentMethodsSelector: React.FC<PaymentMethodsSelectorProps> = ({
 export const defaultPaymentMethods: PaymentMethodOption[] = [
   {
     id: 'bank',
-    icon: <Bank size={36} />,
+    icon: <Banknote size={36} />,
     title: 'Bank Accounts',
     description: 'Connect your bank account for direct transfers'
   },
