@@ -10,9 +10,16 @@ import LastTransactions from '@/components/last-transactions';
 import PaymentMethodsChart from '@/components/payment-methods-chart';
 import TransactionsTable from '@/components/transactions-table';
 import { CreditCard, ArrowUp } from 'lucide-react';
+import { useStats } from '@/hooks/useStats';
+import { useRecentTransactions } from '@/hooks/useTransactions';
 
 const Dashboard = () => {
-  // Sample data for the charts
+  // Use hooks to fetch data from Supabase
+  const { data: statsData, isLoading: isLoadingStats } = useStats();
+  const { data: transactions = [], isLoading: isLoadingTransactions } = useRecentTransactions(8);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Sample data for the charts - in a real app these would come from Supabase
   const monthlyRevenueData = [
     { name: 'Oct', value: 8500 },
     { name: 'Nov', value: 12000 },
@@ -31,115 +38,22 @@ const Dashboard = () => {
     { name: 'Dec', value: 580 },
     { name: 'Jan', value: 620 },
   ];
-
-  const paymentMethodsData = [
-    { name: 'Cards 35%', value: 35, color: '#3b82f6' },
-    { name: 'M-pesa 30%', value: 30, color: '#374151' },
-    { name: 'Bank Transfers 20%', value: 20, color: '#d946ef' },
-    { name: 'Wallet 15%', value: 15, color: '#f97316' },
-  ];
-
-  const lastTransactions = [
-    {
-      id: 'tr-1',
-      name: 'Maria Wanjiru - 3699xxxx',
-      date: '25 Jan, 2025',
-      amount: 'Ksh8,000.00',
-      paymentMethod: 'M-PESA' as const,
-      isPositive: true,
-    },
-    {
-      id: 'tr-2',
-      name: 'Anne W- 5456xxxx',
-      date: '26 Jan, 2025',
-      amount: 'Ksh30,000.00',
-      paymentMethod: 'Card' as const,
-      isPositive: true,
-    },
-    {
-      id: 'tr-3',
-      name: 'Kimani Ndegwa',
-      date: '12 Feb, 2025',
-      amount: 'Ksh10,000.00',
-      paymentMethod: 'Bank Transfer' as const,
-      isPositive: true,
-    },
-    {
-      id: 'tr-4',
-      name: 'Kaiya stanton',
-      date: '24 Mar, 2025',
-      amount: 'Ksh40,000.00',
-      paymentMethod: 'M-PESA' as const,
-      isPositive: true,
-    },
-  ];
-
-  const transactions = [
-    {
-      id: 'TR-3699XXXX',
-      amount: 'Ksh 8,000.00',
-      status: 'Successful' as const,
-      paymentMethod: 'M-PESA' as const,
-      customer: 'Maria Wanjiru',
-      date: 'Jan 25, 2025',
-    },
-    {
-      id: 'TR-5456XXXX',
-      amount: 'Ksh 30,000.00',
-      status: 'Successful' as const,
-      paymentMethod: 'Card' as const,
-      customer: 'Anne W.',
-      date: 'Jan 26, 2025',
-    },
-    {
-      id: 'TR-7823XXXX',
-      amount: 'Ksh 10,000.00',
-      status: 'Successful' as const,
-      paymentMethod: 'Bank Transfer' as const,
-      customer: 'Kimani Ndegwa',
-      date: 'Feb 12, 2025',
-    },
-    {
-      id: 'TR-9012XXXX',
-      amount: 'Ksh 40,000.00',
-      status: 'Successful' as const,
-      paymentMethod: 'Wallet' as const,
-      customer: 'Kaiya Stanton',
-      date: 'Mar 24, 2025',
-    },
-    {
-      id: 'TR-1234XXXX',
-      amount: 'Ksh 15,000.00',
-      status: 'Pending' as const,
-      paymentMethod: 'M-PESA' as const,
-      customer: 'John Doe',
-      date: 'Apr 5, 2025',
-    },
-    {
-      id: 'TR-5678XXXX',
-      amount: 'Ksh 25,000.00',
-      status: 'Failed' as const,
-      paymentMethod: 'Card' as const,
-      customer: 'Jane Smith',
-      date: 'Apr 10, 2025',
-    },
-    {
-      id: 'TR-9101XXXX',
-      amount: 'Ksh 5,000.00',
-      status: 'Pending' as const,
-      paymentMethod: 'Bank Transfer' as const,
-      customer: 'Robert Johnson',
-      date: 'Apr 15, 2025',
-    },
-    {
-      id: 'TR-1121XXXX',
-      amount: 'Ksh 12,000.00',
-      status: 'Successful' as const,
-      paymentMethod: 'Wallet' as const,
-      customer: 'Sarah Williams',
-      date: 'Apr 20, 2025',
-    },
-  ];
+  
+  // Filter transactions based on search query
+  const filteredTransactions = transactions.filter(transaction => 
+    transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    transaction.customer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  // Get latest transactions for the LastTransactions component
+  const lastTransactions = transactions.slice(0, 4).map(transaction => ({
+    id: transaction.id,
+    name: `${transaction.customer} - ${transaction.id.substring(3, 7)}xxxx`,
+    date: transaction.date,
+    amount: transaction.amount.toString(),
+    paymentMethod: transaction.paymentMethod,
+    isPositive: true,
+  }));
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -153,38 +67,54 @@ const Dashboard = () => {
             
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatsCard 
-                title="Total Inflow" 
-                value="Ksh 200,000" 
-                trend={+20} 
-                icon={<CreditCard className="text-blue-600" size={18} />}
-                textColor="text-gray-800"
-              />
-              <StatsCard 
-                title="Successful Transactions" 
-                value="20" 
-                trend={+15} 
-                icon={<ArrowUp className="text-green-600" size={18} />}
-                trendColor="green"
-              />
-              <StatsCard 
-                title="Pending Transactions" 
-                value="12" 
-                trend={-5} 
-                trendColor="yellow"
-              />
-              <StatsCard 
-                title="Failed Transactions" 
-                value="2" 
-                trend={-10} 
-                trendColor="red"
-              />
+              {isLoadingStats ? (
+                // Loading placeholders
+                Array(4).fill(null).map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg p-4 border animate-pulse">
+                    <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+                    <div className="h-8 bg-gray-200 rounded w-1/2 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <StatsCard 
+                    title="Total Inflow" 
+                    value={`Ksh ${statsData?.totalInflow.toLocaleString() || '0'}`}
+                    trend={+20} 
+                    icon={<CreditCard className="text-blue-600" size={18} />}
+                    textColor="text-gray-800"
+                  />
+                  <StatsCard 
+                    title="Successful Transactions" 
+                    value={statsData?.successfulTransactions.toString() || '0'} 
+                    trend={+15} 
+                    icon={<ArrowUp className="text-green-600" size={18} />}
+                    trendColor="green"
+                  />
+                  <StatsCard 
+                    title="Pending Transactions" 
+                    value={statsData?.pendingTransactions.toString() || '0'} 
+                    trend={-5} 
+                    trendColor="yellow"
+                  />
+                  <StatsCard 
+                    title="Failed Transactions" 
+                    value={statsData?.failedTransactions.toString() || '0'} 
+                    trend={-10} 
+                    trendColor="red"
+                  />
+                </>
+              )}
             </div>
             
             {/* Last Transactions and Quick Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
               <div className="lg:col-span-3">
-                <LastTransactions transactions={lastTransactions} />
+                <LastTransactions 
+                  transactions={isLoadingTransactions ? [] : lastTransactions}
+                  isLoading={isLoadingTransactions}
+                />
               </div>
               <div className="lg:col-span-1">
                 <QuickActions />
@@ -194,13 +124,23 @@ const Dashboard = () => {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               <div className="lg:col-span-1">
-                <PaymentMethodsChart data={paymentMethodsData} />
+                <PaymentMethodsChart 
+                  data={statsData?.paymentMethods || []}
+                  isLoading={isLoadingStats}
+                />
               </div>
               <div className="lg:col-span-1">
-                <RevenueChart title="Monthly Revenue" data={monthlyRevenueData} />
+                <RevenueChart 
+                  title="Monthly Revenue" 
+                  data={monthlyRevenueData} 
+                />
               </div>
               <div className="lg:col-span-1">
-                <RevenueChart title="Balance Revenue" data={balanceRevenueData} type="area" />
+                <RevenueChart 
+                  title="Balance Revenue" 
+                  data={balanceRevenueData} 
+                  type="area" 
+                />
               </div>
             </div>
             
@@ -213,6 +153,8 @@ const Dashboard = () => {
                     <input 
                       type="text" 
                       placeholder="Search transactions..." 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-8 pr-4 py-1 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <div className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">
@@ -247,7 +189,10 @@ const Dashboard = () => {
                 </div>
               </div>
               
-              <TransactionsTable transactions={transactions} />
+              <TransactionsTable 
+                transactions={filteredTransactions} 
+                isLoading={isLoadingTransactions}
+              />
             </div>
           </div>
         </main>
