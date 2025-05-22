@@ -1,7 +1,9 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import StatusBadge from './status-badge';
 import PaymentMethodIcon from './payment-method-icon';
+import { Transaction as GlobalTransaction } from '@/types';
 
 export interface Transaction {
   id: string;
@@ -156,6 +158,14 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({
       )}
     </div>
   );
+};
+
+// Convert global Transaction type to the local Transaction type for the table
+export const convertToTableTransaction = (transaction: GlobalTransaction): Transaction => {
+  return {
+    ...transaction,
+    amount: transaction.amount.toString()
+  };
 };
 
 export default TransactionsTable;

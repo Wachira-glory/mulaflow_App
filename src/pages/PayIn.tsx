@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Sidebar from '@/components/sidebar';
@@ -10,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import PaymentSetupModal from '@/components/payment-setup-modal';
 import { Send, FileText } from 'lucide-react';
+import { triggerStkPush } from '@/lib/quikk';
 
 const PayIn = () => {
   const [activeTab, setActiveTab] = useState<string>('requesting');
@@ -43,15 +43,28 @@ const PayIn = () => {
     setModalState({ open: true, type: 'link' });
   };
 
-  const handleTriggerSTKPush = (e: React.FormEvent) => {
+  const handleTriggerSTKPush = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Implement STK push
-    setModalState({ open: true, type: 'summary' });
     
-    // Mock payment success after 3 seconds
-    setTimeout(() => {
+    try {
+      // Show the processing state
+      setModalState({ open: true, type: 'summary' });
+      
+      // Trigger STK push via our utility function
+      await triggerStkPush({
+        amount: formData.amount,
+        phone: '254712345678', // In a real app, this would be collected from the user
+        paybill: '8999795',
+        reference: `${formData.customerName}-${Date.now()}`
+      });
+      
+      // Show success state
       setModalState({ open: true, type: 'success' });
-    }, 3000);
+    } catch (error) {
+      console.error('Error triggering STK push:', error);
+      toast.error('Failed to process payment. Please try again.');
+      setModalState({ open: false, type: 'summary' });
+    }
   };
 
   const handleCloseModal = () => {

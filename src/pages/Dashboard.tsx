@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '@/components/sidebar';
@@ -8,7 +7,7 @@ import RevenueChart from '@/components/revenue-chart';
 import QuickActions from '@/components/quick-actions';
 import LastTransactions from '@/components/last-transactions';
 import PaymentMethodsChart from '@/components/payment-methods-chart';
-import TransactionsTable from '@/components/transactions-table';
+import TransactionsTable, { convertToTableTransaction } from '@/components/transactions-table';
 import { CreditCard, ArrowUp } from 'lucide-react';
 import { useStats } from '@/hooks/useStats';
 import { useRecentTransactions } from '@/hooks/useTransactions';
@@ -43,7 +42,7 @@ const Dashboard = () => {
   const filteredTransactions = transactions.filter(transaction => 
     transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     transaction.customer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ).map(convertToTableTransaction);
   
   // Get latest transactions for the LastTransactions component
   const lastTransactions = transactions.slice(0, 4).map(transaction => ({
