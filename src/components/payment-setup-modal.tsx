@@ -3,7 +3,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Logo } from './ui/logo';
 
 interface PaymentSetupModalProps {
@@ -16,6 +16,7 @@ interface PaymentSetupModalProps {
     purpose?: string;
     billId?: string;
     mpesaTill?: string;
+    failed?: boolean;
   };
 }
 
@@ -33,33 +34,51 @@ const PaymentSetupModal: React.FC<PaymentSetupModalProps> = ({
             <div className="flex justify-center mb-4">
               <Logo />
             </div>
-            <DialogTitle className="text-center">Payment Summary</DialogTitle>
+            <DialogTitle className="text-center">
+              {data.failed ? 'Payment Failed' : 'Payment Summary'}
+            </DialogTitle>
+            {data.failed && (
+              <DialogDescription className="text-center text-red-500">
+                There was a problem processing your payment
+              </DialogDescription>
+            )}
           </DialogHeader>
           <div className="py-6">
-            <h2 className="text-xl text-center mb-6">Hello, {data.customerName || 'John Smith'}</h2>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span>Purpose of Bill</span>
-                <span className="font-medium">{data.purpose || 'Quikk Api'}</span>
+            {data.failed ? (
+              <div className="flex flex-col items-center mb-6">
+                <AlertTriangle className="h-16 w-16 text-red-500 mb-4" />
+                <p className="text-center">
+                  We couldn't process your payment. Please try again or contact support.
+                </p>
               </div>
-              
-              <div className="flex justify-between">
-                <span>Amount</span>
-                <span className="font-medium">{data.amount || 'Ksh 30,000'}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span>Mpesa Till :</span>
-                <span className="font-medium">{data.mpesaTill || '8999795'}</span>
-              </div>
-            </div>
+            ) : (
+              <>
+                <h2 className="text-xl text-center mb-6">Hello, {data.customerName || 'Customer'}</h2>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span>Purpose of Bill</span>
+                    <span className="font-medium">{data.purpose || 'Payment'}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span>Amount</span>
+                    <span className="font-medium">{data.amount || 'Ksh 0'}</span>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <span>Mpesa Till :</span>
+                    <span className="font-medium">{data.mpesaTill || '8999795'}</span>
+                  </div>
+                </div>
+              </>
+            )}
             
             <Button 
-              className="w-full mt-8 bg-blue-700 hover:bg-blue-800" 
+              className={`w-full mt-8 ${data.failed ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-700 hover:bg-blue-800'}`} 
               onClick={onClose}
             >
-              Confirm Payment
+              {data.failed ? 'Try Again' : 'Confirm Payment'}
             </Button>
           </div>
         </DialogContent>
@@ -82,8 +101,8 @@ const PaymentSetupModal: React.FC<PaymentSetupModalProps> = ({
               <CheckCircle2 className="h-16 w-16 text-green-500" />
             </div>
             <p className="mb-8">
-              Thank you for your payment. We have received your {data.amount || 'KES 30,000'}
-              for {data.purpose || 'Quikk API'}.
+              Thank you for your payment. We have received your {data.amount || 'payment'}
+              for {data.purpose || 'service'}.
             </p>
             
             <Button 
@@ -116,15 +135,15 @@ const PaymentSetupModal: React.FC<PaymentSetupModalProps> = ({
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Customer Name</span>
-              <span>{data.customerName || 'John Smith'}</span>
+              <span>{data.customerName || 'Customer'}</span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Purpose of Bill</span>
-              <span>{data.purpose || 'Quikk Api'}</span>
+              <span>{data.purpose || 'Payment'}</span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Amount</span>
-              <span>{data.amount || 'Ksh 30,000'}</span>
+              <span>{data.amount || 'Ksh 0'}</span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Mpesa Till :</span>

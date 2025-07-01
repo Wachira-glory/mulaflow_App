@@ -13,13 +13,15 @@ interface RevenueChartProps {
   title: string;
   yAxisLabel?: string;
   type?: 'line' | 'area';
+  isLoading?: boolean;
 }
 
 const RevenueChart: React.FC<RevenueChartProps> = ({ 
   data, 
   title, 
   yAxisLabel = '', 
-  type = 'line' 
+  type = 'line',
+  isLoading = false
 }) => {
   const renderChart = () => {
     if (type === 'area') {
@@ -50,6 +52,23 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
       </LineChart>
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-semibold">{title}</h3>
+          <Link to="/reports" className="text-sm text-gray-500 hover:text-blue-600">View all</Link>
+        </div>
+        <div className="w-full h-64 flex items-center justify-center">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
+            <div className="h-32 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border rounded-lg p-4">

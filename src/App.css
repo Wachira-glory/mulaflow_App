@@ -5,6 +5,26 @@
   text-align: center;
 }
 
+/* .hero-section {
+  background-image: url('/lovable-uploads/bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: 0;
+  min-height: 100vh; 
+} */
+.hero-section {
+  background-image: url('/lovable-uploads/bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+
 .logo {
   height: 6em;
   padding: 1.5em;

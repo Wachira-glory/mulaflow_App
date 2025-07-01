@@ -1,4 +1,4 @@
-
+//src/components/setup-progress.tsx
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';

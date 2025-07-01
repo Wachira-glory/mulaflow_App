@@ -1,16 +1,76 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 import Sidebar from '@/components/sidebar';
 import Header from '@/components/header';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Filter, Download } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useReconciliationData } from '@/hooks/useReconciliationData';
 
 const Reconciliation = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('all');
+  // const { data: reconciliationData, isLoading } = useReconciliationData();
+const reconciliationData = {
+  summary: { totalTransactions: 10, reconciled: 5, discrepancies: 2, pending: 3 },
+  discrepancies: []
+};
+const isLoading = false;
+
   const handleStartReconciliation = () => {
-    toast.info('Reconciliation feature coming soon!');
+    toast.info('Starting reconciliation process...');
   };
+
+  const filteredDiscrepancies = reconciliationData?.discrepancies?.filter(item => {
+    if (activeTab === 'resolved' && item.status !== 'Resolved') return false;
+    if (activeTab === 'unresolved' && item.status !== 'Unresolved') return false;
+    
+    return item.transactionId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           item.amount.toLowerCase().includes(searchQuery.toLowerCase());
+  }) || [];
+
+  const getStatusClass = (status: string) => {
+    switch(status.toLowerCase()) {
+      case 'resolved':
+        return 'bg-green-100 text-green-700';
+      case 'unresolved':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-6xl mx-auto">
+              <div className="animate-pulse">
+                <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
+                <div className="bg-white rounded-lg p-6 mb-8">
+                  <div className="h-6 bg-gray-200 rounded w-64 mb-4"></div>
+                  <div className="grid grid-cols-4 gap-6">
+                    {Array(4).fill(null).map((_, i) => (
+                      <div key={i} className="space-y-2">
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                        <div className="h-8 bg-gray-200 rounded"></div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -41,21 +101,108 @@ const Reconciliation = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Total Transactions</div>
-                    <div className="text-2xl font-semibold">243</div>
+                    <div className="text-2xl font-semibold">{reconciliationData?.summary.totalTransactions || 0}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Reconciled</div>
-                    <div className="text-2xl font-semibold text-green-600">198</div>
+                    <div className="text-2xl font-semibold text-green-600">{reconciliationData?.summary.reconciled || 0}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Discrepancies</div>
-                    <div className="text-2xl font-semibold text-amber-600">32</div>
+                    <div className="text-2xl font-semibold text-amber-600">{reconciliationData?.summary.discrepancies || 0}</div>
                   </div>
                   <div>
                     <div className="text-sm text-gray-500 mb-1">Pending</div>
-                    <div className="text-2xl font-semibold text-blue-600">13</div>
+                    <div className="text-2xl font-semibold text-blue-600">{reconciliationData?.summary.pending || 0}</div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="mb-6">
+              <CardHeader className="pb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                  <CardTitle>Discrepancies</CardTitle>
+                </div>
+              </CardHeader>
+              
+              <CardContent>
+                <Tabs defaultValue="all" onValueChange={setActiveTab}>
+                  <TabsList className="mb-6">
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="unresolved">Unresolved</TabsTrigger>
+                    <TabsTrigger value="resolved">Resolved</TabsTrigger>
+                  </TabsList>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Discrepancy ID
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Transaction ID
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Amount
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Discrepancy Type
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th scope="col" className="relative px-6 py-3">
+                            <span className="sr-only">Actions</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredDiscrepancies.length > 0 ? (
+                          filteredDiscrepancies.map((item) => (
+                            <tr key={item.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                {item.id}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {item.transactionId}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {item.date}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {item.amount}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {item.discrepancyType}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span className={`px-3 py-1 text-xs rounded-full font-medium ${getStatusClass(item.status)}`}>
+                                  {item.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <Button size="sm" variant="ghost" onClick={() => toast.info(`Comparing transaction ${item.transactionId} with bank statement...`)}>
+                                  Compare
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={7} className="px-6 py-12 text-center">
+                              <p className="text-gray-500 mb-2">No discrepancies found</p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </Tabs>
               </CardContent>
             </Card>
             
@@ -82,65 +229,27 @@ const Reconciliation = () => {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Auto-Reconciliation</CardTitle>
-                  <CardDescription>Schedule automated reconciliation</CardDescription>
+                  <CardTitle>Upload Bank Statement</CardTitle>
+                  <CardDescription>Upload your bank statement for reconciliation</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
                     <p className="text-sm text-gray-500">
-                      Set up automatic reconciliation to regularly compare your records with external systems.
+                      Upload your bank statement in CSV or Excel format to automatically compare with your transaction records.
                     </p>
-                    <div className="bg-amber-50 p-3 rounded text-sm text-amber-800 mb-4">
-                      Auto-reconciliation requires a Professional or Enterprise plan.
+                    <div className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center">
+                      <p className="text-sm text-gray-500 mb-2">Drag and drop your file here, or click to browse</p>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => toast.info('File upload functionality coming soon')}
+                      >
+                        Browse Files
+                      </Button>
                     </div>
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => toast.info('Auto-reconciliation requires a plan upgrade!')}
-                    >
-                      Set Up Auto-Reconciliation
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
             </div>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Reconciliation Reports</CardTitle>
-                <CardDescription>View and download your recent reconciliation reports</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="text-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-12 w-12 text-gray-400 mx-auto mb-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <h3 className="text-lg font-medium mb-2">No Reconciliation Reports Yet</h3>
-                    <p className="text-gray-500 max-w-md mx-auto mb-6">
-                      You haven't run any reconciliation processes yet. When you do, your reports will appear here.
-                    </p>
-                    <Button 
-                      className="bg-blue-700 hover:bg-blue-800"
-                      onClick={handleStartReconciliation}
-                    >
-                      Run Your First Reconciliation
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </main>
       </div>
